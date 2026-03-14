@@ -1,31 +1,19 @@
 #[derive(Clone)]
 pub struct Client {
     pub client_id: String,
-    client_secret: Option<String>,
+    pub client_secret: Option<String>,
 }
 
-async fn get_clients() -> Vec<Client> {
-    vec![
-        Client {
-            client_id: "client0".to_string(),
-            client_secret: None,
-        },
-        Client {
-            client_id: "client1".to_string(),
-            client_secret: Some("foobar".to_string()),
-        },
-        Client {
-            client_id: "client2".to_string(),
-            client_secret: Some("secret".to_string()),
-        },
-    ]
+pub trait ClientStore {
+    async fn get(&self, client_id: String) -> Option<Client>;
 }
 
-pub async fn auth_client(client_id: String, client_secret: String) -> Result<Client, String> {
-    let client = get_clients()
-        .await
-        .into_iter()
-        .find(|c| c.client_id == client_id);
+pub async fn auth_client(
+    client_id: String,
+    client_secret: String,
+    store: &impl ClientStore,
+) -> Result<Client, String> {
+    let client = store.get(client_id).await;
 
     match client {
         Some(c) => {

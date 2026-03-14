@@ -2,11 +2,9 @@ use actix_web::web::Json;
 use actix_web::{HttpResponse, web};
 use serde::{Deserialize, Serialize};
 
-#[path = "./client.rs"]
-mod client;
-
-#[path = "./token.rs"]
-mod token;
+use crate::client::auth_client;
+use crate::static_store::StaticStore;
+use crate::token::generate_token;
 
 #[derive(Deserialize)]
 pub struct TokenForm {
@@ -20,17 +18,22 @@ pub struct TokenError {
     error: String,
 }
 
-pub async fn get_token(form: web::Form<TokenForm>) -> HttpResponse {
+pub async fn get_token(store: web::Data<StaticStore>, form: web::Form<TokenForm>) -> HttpResponse {
     let form_data = form.into_inner();
     if form_data.grant_type != "client_credentials" {
         HttpResponse::BadRequest().json(Json(TokenError {
             error: "invalid grant type".to_string(),
         }))
     } else {
-        let auth_result = client::auth_client(form_data.client_id, form_data.client_secret).await;
+        let auth_result = auth_client(
+            form_data.client_id,
+            form_data.client_secret,
+            store.get_ref(),
+        )
+        .await;
         match auth_result {
             Ok(client) => {
-                let token = token::generate_token(client.client_id);
+                let token = generate_token(client.client_id);
                 HttpResponse::Ok().json(Json(token))
             }
             Err(err) => HttpResponse::BadRequest().json(TokenError { error: err }),

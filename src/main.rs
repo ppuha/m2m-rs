@@ -1,8 +1,13 @@
+mod client;
+mod handler;
+mod static_store;
+mod token;
+
 use actix_web::middleware::Logger;
 use actix_web::{App, HttpServer, web};
 use env_logger::{Env, init_from_env};
 
-mod handler;
+use crate::static_store::StaticStore;
 
 fn init_logger() {
     init_from_env(Env::new().default_filter_or("info"));
@@ -10,9 +15,12 @@ fn init_logger() {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    let store = web::Data::new(StaticStore::new());
+
     init_logger();
-    HttpServer::new(|| {
+    HttpServer::new(move || {
         App::new()
+            .app_data(store.clone())
             .route("oauth2/token", web::post().to(handler::get_token))
             .wrap(Logger::default())
     })
