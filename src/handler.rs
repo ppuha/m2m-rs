@@ -2,9 +2,15 @@ use actix_web::web::Json;
 use actix_web::{HttpResponse, web};
 use serde::{Deserialize, Serialize};
 
-use crate::client::auth_client;
+use crate::client::{ClientStore, auth_client};
 use crate::static_store::StaticStore;
 use crate::token::generate_token;
+
+pub async fn get_clients(store: web::Data<StaticStore>) -> HttpResponse {
+    let clients = store.get_ref().get_all().await;
+
+    HttpResponse::Ok().json(Json(clients))
+}
 
 #[derive(Deserialize)]
 pub struct TokenForm {

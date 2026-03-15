@@ -1,10 +1,13 @@
-#[derive(Clone)]
+use serde::Serialize;
+
+#[derive(Clone, Serialize)]
 pub struct Client {
     pub client_id: String,
     pub client_secret: Option<String>,
 }
 
 pub trait ClientStore {
+    async fn get_all(&self) -> Vec<Client>;
     async fn get(&self, client_id: String) -> Option<Client>;
 }
 

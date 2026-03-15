@@ -21,6 +21,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(store.clone())
+            .route("admin/clients", web::get().to(handler::get_clients))
             .route("oauth2/token", web::post().to(handler::get_token))
             .wrap(Logger::default())
     })

@@ -26,6 +26,9 @@ impl StaticStore {
 }
 
 impl ClientStore for StaticStore {
+    async fn get_all(&self) -> Vec<Client> {
+        self.clients.to_owned()
+    }
     async fn get(&self, client_id: String) -> Option<Client> {
         self.clients
             .to_owned()
