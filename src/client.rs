@@ -7,8 +7,8 @@ pub struct Client {
 }
 
 pub trait ClientStore {
-    async fn get_all(&self) -> Vec<Client>;
-    async fn get(&self, client_id: String) -> Option<Client>;
+    async fn get_all(&self) -> Result<Vec<Client>, String>;
+    async fn get(&self, client_id: String) -> Result<Client, String>;
 }
 
 pub async fn auth_client(
@@ -16,21 +16,20 @@ pub async fn auth_client(
     client_secret: String,
     store: &impl ClientStore,
 ) -> Result<Client, String> {
-    let client = store.get(client_id).await;
-
-    match client {
-        Some(c) => {
-            if c.client_secret
-                .to_owned()
-                .map(|cs| cs == client_secret)
-                .or_else(|| Some(true))
-                .unwrap()
-            {
-                Ok(c.clone())
-            } else {
-                Err("invalid credentials".to_string())
-            }
+    store.get(client_id).await.and_then(|client| {
+        if client_secret_match(&client, client_secret) {
+            Ok(client)
+        } else {
+            Err("invalid client credentials".to_string())
         }
-        None => Err("unknown client".to_string()),
-    }
+    })
+}
+
+fn client_secret_match(client: &Client, client_secret: String) -> bool {
+    client
+        .client_secret
+        .to_owned()
+        .map(|cs| cs == client_secret)
+        .or_else(|| Some(true))
+        .unwrap()
 }

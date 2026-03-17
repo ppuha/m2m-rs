@@ -7,9 +7,12 @@ use crate::static_store::StaticStore;
 use crate::token::generate_token;
 
 pub async fn get_clients(store: web::Data<StaticStore>) -> HttpResponse {
-    let clients = store.get_ref().get_all().await;
+    let res = store.get_ref().get_all().await;
 
-    HttpResponse::Ok().json(Json(clients))
+    match res {
+        Ok(clients) => HttpResponse::Ok().json(Json(clients)),
+        Err(err) => HttpResponse::InternalServerError().json(err),
+    }
 }
 
 #[derive(Deserialize)]

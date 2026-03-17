@@ -26,13 +26,18 @@ impl StaticStore {
 }
 
 impl ClientStore for StaticStore {
-    async fn get_all(&self) -> Vec<Client> {
-        self.clients.to_owned()
+    async fn get_all(&self) -> Result<Vec<Client>, String> {
+        Ok(self.clients.to_owned())
     }
-    async fn get(&self, client_id: String) -> Option<Client> {
-        self.clients
+    async fn get(&self, client_id: String) -> Result<Client, String> {
+        let client = self
+            .clients
             .to_owned()
             .into_iter()
-            .find(|c| c.client_id == client_id)
+            .find(|c| c.client_id == client_id);
+        match client {
+            Some(c) => Ok(c),
+            None => Err("client not found".to_string()),
+        }
     }
 }
