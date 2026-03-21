@@ -3,10 +3,10 @@ use actix_web::{HttpResponse, web};
 use serde::{Deserialize, Serialize};
 
 use crate::client::{ClientStore, auth_client};
-use crate::static_store::StaticStore;
+use crate::file_store::FileStore;
 use crate::token::generate_token;
 
-pub async fn get_clients(store: web::Data<StaticStore>) -> HttpResponse {
+pub async fn get_clients(store: web::Data<FileStore>) -> HttpResponse {
     let res = store.get_ref().get_all().await;
 
     match res {
@@ -27,7 +27,7 @@ pub struct TokenError {
     error: String,
 }
 
-pub async fn get_token(store: web::Data<StaticStore>, form: web::Form<TokenForm>) -> HttpResponse {
+pub async fn get_token(store: web::Data<FileStore>, form: web::Form<TokenForm>) -> HttpResponse {
     let form_data = form.into_inner();
     if form_data.grant_type != "client_credentials" {
         HttpResponse::BadRequest().json(Json(TokenError {

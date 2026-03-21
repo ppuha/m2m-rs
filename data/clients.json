@@ -1,0 +1,14 @@
+[
+  {
+    "client_id": "client0",
+    "client_secret": null
+  },
+  {
+    "client_id": "client1",
+    "client_secret": "foobar"
+  },
+  {
+    "client_id": "client2",
+    "client_secret": "secret"
+  }
+]

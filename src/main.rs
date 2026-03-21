@@ -1,21 +1,21 @@
 mod client;
+mod file_store;
 mod handler;
-mod static_store;
 mod token;
 
+use crate::file_store::FileStore;
 use actix_web::middleware::Logger;
 use actix_web::{App, HttpServer, web};
 use env_logger::{Env, init_from_env};
 
-use crate::static_store::StaticStore;
-
 fn init_logger() {
-    init_from_env(Env::new().default_filter_or("info"));
+    init_from_env(Env::new().default_filter_or("debug"));
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let store = web::Data::new(StaticStore::new());
+    let store_path = "data/clients.json".to_string();
+    let store = web::Data::new(FileStore::new(store_path));
 
     init_logger();
     HttpServer::new(move || {
